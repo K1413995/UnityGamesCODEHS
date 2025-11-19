@@ -6,6 +6,10 @@ public class PlayerControls : MonoBehaviour
 {
     // Variables
 
+    // Check in Inspector if GameObject is Player One or Player Two
+    public bool playerOne = true;
+    public bool playerTwo = false;
+
     // Access Unity APIs for components
     public CharacterController controller;
     public Animator anim;
@@ -16,7 +20,7 @@ public class PlayerControls : MonoBehaviour
 
     // Values for rotation, jump height, and running speeds
     public float runningSpeed = 4.0f;
-    public float rotationSpeed = 50.0f;
+    public float rotationSpeed = 150.0f;
     public float jumpHeight = 6.0f;
 
     // Declare player input variables
@@ -39,65 +43,78 @@ public class PlayerControls : MonoBehaviour
     void Update()
     {
         // Assign player input from Project Settings to variables
-        runInput = Input.GetAxis("Vertical");
-        rotateInput = Input.GetAxis("Horizontal");
+        if (playerOne)
+        {
+            runInput = Input.GetAxis("Vertical");
+            rotateInput = Input.GetAxis("Horizontal");
 
-        // Check to see if jump key is pressed
-        CheckJump();
+            if (controller.isGrounded)
+            {
+                jumpInput = Input.GetAxis("Jump");
+            }
+        }
+        else
+        {
+            runInput = Input.GetAxis("VerticalTwo");
+            rotateInput = Input.GetAxis("HorizontalTwo");
+
+            if (controller.isGrounded)
+            {
+                jumpInput = Input.GetAxis("JumpTwo");
+            }
+        }
 
         // Set moveDir to new Vector3 based on player input
         moveDir = new Vector3(0, jumpInput * jumpHeight, runInput * runningSpeed);
+
         // Update the character's direction based on the game world and player input
         moveDir = transform.TransformDirection(moveDir);
-        // Move the character using the controller in the direction and new position set earlier
+
+        // Move the character using the controller
         controller.Move(moveDir * Time.deltaTime);
 
         // Update character rotation
         transform.Rotate(0f, rotateInput * rotationSpeed * Time.deltaTime, 0f);
 
-        // Update animations and sound effects based on player input values
+        // Update animations and sound effects
         Effects();
-    }
-
-    void CheckJump()
-    {
-        if (Input.GetKey(KeyCode.Space))
-        {
-            jumpInput = 1;
-            if (audioSource != null && audioSource.isPlaying)
-            {
-                audioSource.Stop();
-            }
-        }
-
-        if (controller.isGrounded)
-        {
-            jumpInput = 0;
-        }
     }
 
     void Effects()
     {
+        // Running animation and sound
         if (runInput != 0 && jumpInput == 0)
         {
             anim.SetBool("Run Forward", true);
+
             if (audioSource != null && !audioSource.isPlaying && controller.isGrounded)
             {
                 audioSource.clip = runningSound;
                 audioSource.Play();
             }
-        } else {
+        }
+        else
+        {
             anim.SetBool("Run Forward", false);
+
             if (audioSource != null && audioSource.isPlaying)
             {
                 audioSource.Stop();
             }
         }
 
-        if (jumpInput == 1)
+        // Jump animation and stop running sound
+        if (jumpInput != 0)
         {
             anim.SetBool("Jump", true);
-        } else {
+
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+        }
+        else
+        {
             anim.SetBool("Jump", false);
         }
     }
