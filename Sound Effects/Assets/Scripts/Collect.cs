@@ -18,5 +18,6 @@ public class Collect : MonoBehaviour
     void OnCollisionEnter(Collision collision){
         audioSource.PlayOneShot(collect, 0.5F);
         Destroy(gameObject, 0.4F);
+        Debug.Log("works");
     }   
 }
